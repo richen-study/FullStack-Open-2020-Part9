@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isString } from "formik";
-import { NewPatientEntry, Gender } from "../types";
+import { NewPatientEntry, Gender } from "../src/types";
 
 const parseString = (arg: any): string => {
   if (!arg || !isString(arg)) {

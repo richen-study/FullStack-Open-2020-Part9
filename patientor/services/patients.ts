@@ -3,14 +3,14 @@ import patientData from "../data/patients";
 import { v4 as uuidv4 } from "uuid";
 
 import {
-  PatientEntry,
+  Patient,
   NonSensitivePatientEntry,
   NewPatientEntry,
-} from "../types";
+} from "../src/types";
 
-const patients: Array<PatientEntry> = patientData;
+const patients: Array<Patient> = patientData;
 
-const getEntries = (): Array<PatientEntry> => {
+const getEntries = (): Array<Patient> => {
   return patients;
 };
 
@@ -27,12 +27,12 @@ const getNonSensitiveEntries = (): NonSensitivePatientEntry[] => {
   );
 };
 
-const findById = (id: string): PatientEntry | undefined => {
+const findById = (id: string): Patient | undefined => {
   const entry = patients.find((p) => p.id === id);
   return entry;
 };
 
-const addPatient = (entry: NewPatientEntry): PatientEntry => {
+const addPatient = (entry: NewPatientEntry): Patient => {
   const newPatientEntry = {
     id: uuidv4(),
     ...entry,
