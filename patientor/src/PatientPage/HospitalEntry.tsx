@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Icon, List } from "semantic-ui-react";
 
 import { HospitalEntry as Hospital } from "../types";
+import DiagnosisList from "./DiagnosisList";
 
 const HospitalEntry: React.FC<{ entry: Hospital }> = ({ entry }) => {
   return (
@@ -12,6 +13,9 @@ const HospitalEntry: React.FC<{ entry: Hospital }> = ({ entry }) => {
         </Card.Header>
         <Card.Meta>by {entry.specialist}</Card.Meta>
         <Card.Description>{entry.description}</Card.Description>
+        {entry.diagnosisCodes && (
+          <DiagnosisList diagnosesCodes={entry.diagnosisCodes} />
+        )}
       </Card.Content>
 
       <Card.Content extra>

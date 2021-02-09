@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Icon } from "semantic-ui-react";
 
 import { HealthCheckEntry as HealthCheck } from "../types";
+import DiagnosisList from "./DiagnosisList";
 
 import HealthRatingBar from "../components/HealthRatingBar";
 
@@ -14,7 +15,9 @@ const HealthCheckEntry: React.FC<{ entry: HealthCheck }> = ({ entry }) => {
         </Card.Header>
         <Card.Meta>by {entry.specialist}</Card.Meta>
         <Card.Description>{entry.description}</Card.Description>
-
+        {entry.diagnosisCodes && (
+          <DiagnosisList diagnosesCodes={entry.diagnosisCodes} />
+        )}
       </Card.Content>
       <Card.Content extra>
         <HealthRatingBar rating={entry.healthCheckRating} showText={true} />

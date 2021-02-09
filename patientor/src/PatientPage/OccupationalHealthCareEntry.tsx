@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Icon, List } from "semantic-ui-react";
 
 import { OccupationalHealthCareEntry as OccupationalHealthCare } from "../types";
+import DiagnosisList from "./DiagnosisList";
 
 const OccupationalHealthCareEntry: React.FC<{
   entry: OccupationalHealthCare;
@@ -14,7 +15,9 @@ const OccupationalHealthCareEntry: React.FC<{
         </Card.Header>
         <Card.Meta>by {entry.specialist}</Card.Meta>
         <Card.Description>{entry.description}</Card.Description>
-
+        {entry.diagnosisCodes && (
+          <DiagnosisList diagnosesCodes={entry.diagnosisCodes} />
+        )}
         <List>
           <List.Item>
             <strong>Employer:</strong> {entry.employerName}
