@@ -1,42 +1,71 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isString } from "formik";
-import { NewPatientEntry, Gender } from "../src/types";
+import {
+  Diagnosis,
+  NewPatientEntry,
+  Gender,
+  EntryType,
+  HealthCheckRating,
+  SickLeave,
+  Discharge,
+  NewBaseEntry,
+  NewEntry,
+} from "../types";
 
-const parseString = (arg: any): string => {
-  if (!arg || !isString(arg)) {
-    throw new Error(`Incorrect or missing arg:  ${arg}`);
-  }
+/**
+ * Helper function for exhaustive type checking
+ */
+export const assertNever = (value: never): never => {
+  throw new Error(
+    `Unhandled discriminated union member: ${JSON.stringify(value)}`
+  );
+};
 
-  return arg;
+const isString = (text: any): text is string => {
+  return typeof text === "string" || text instanceof String;
 };
 
 const isDate = (date: string): boolean => {
   return Boolean(Date.parse(date));
 };
 
-const parseDate = (date: any): string => {
-  if (!date || !isString(date) || !isDate(date)) {
-    throw new Error(`Incorrect or missing date: ${date}`);
-  }
-  return date;
-};
-
 const isGender = (param: any): param is Gender => {
   return Object.values(Gender).includes(param);
 };
 
-const parseGender = (gender: any): Gender => {
-  if (!gender || !isGender(gender) || !isString(gender)) {
-    throw new Error(`Incorrect or missing gender: ${gender}`);
-  }
-  return gender;
+const isHealthCheckRating = (param: any): param is HealthCheckRating => {
+  return Object.values(HealthCheckRating).includes(param);
 };
 
-/* const isEntry = (param: any): param is Entry[] => {
-  return Object.values(Entry).includes(param);
+const isArrayOfStrings = (param: any[]): param is string[] => {
+  const hasNonString = param.some((item) => {
+    return !isString(item);
+  });
+
+  return !hasNonString;
+};
+
+export const parseToString = (param: any, paramName: string): string => {
+  if (!param || !isString(param)) {
+    throw new Error(`Incorrect or missing ${paramName}: ${param || ""}`);
+  }
+  return param;
+};
+
+const parseGender = (gender: any): Gender => {
+  if (!gender || !isString(gender) || !isGender(gender.toLowerCase())) {
+    throw new Error(`Incorrect or missing gender: ${gender || ""}`);
+  }
+  return gender.toLowerCase() as Gender;
+};
+
+const parseToDate = (param: any, paramName: string): string => {
+  if (!param || !isString(param) || !isDate(param)) {
+    throw new Error(`Incorrect or missing ${paramName}: ${param || ""}`);
+  }
+  return param;
 };
 
 const parseEntryType = (entryType: any): EntryType => {
@@ -47,12 +76,31 @@ const parseEntryType = (entryType: any): EntryType => {
   return entryType;
 };
 
+const parseDiagnosesCodes = (diagnosisCodes: any): Array<Diagnosis["code"]> => {
+  if (!Array.isArray(diagnosisCodes) || !isArrayOfStrings(diagnosisCodes)) {
+    throw new Error("Incorrect or missing diagnoses");
+  }
+
+  return diagnosisCodes;
+};
+
+export const toNewPatient = (object: any): NewPatientEntry => {
+  return {
+    name: parseToString(object.name, "name"),
+    occupation: parseToString(object.occupation, "occupation"),
+    gender: parseGender(object.gender),
+    ssn: parseToString(object.ssn, "social security number"),
+    dateOfBirth: parseToDate(object.dateOfBirth, "date of birth"),
+    entries: [],
+  };
+};
+
 const toNewBaseEntry = (object: any): NewBaseEntry => {
   const newBaseEntry: NewBaseEntry = {
     type: parseEntryType(object.type),
-    description: parseString(object.description),
-    date: parseDate(object.date),
-    specialist: parseString(object.specialist),
+    description: parseToString(object.description, "description"),
+    date: parseToDate(object.date, "date"),
+    specialist: parseToString(object.specialist, "specialist"),
   };
 
   if (object.diagnosisCodes) {
@@ -60,18 +108,62 @@ const toNewBaseEntry = (object: any): NewBaseEntry => {
   }
 
   return newBaseEntry;
-}; */
+};
 
-const toNewPatientEntry = (object: any): NewPatientEntry => {
+const parseHealthCheckRating = (healthCheckRating: any): HealthCheckRating => {
+  if (
+    healthCheckRating === null ||
+    healthCheckRating === undefined ||
+    !isHealthCheckRating(healthCheckRating)
+  ) {
+    throw new Error(
+      `Incorrect or missing health check rating: ${healthCheckRating || ""}`
+    );
+  }
+  return healthCheckRating;
+};
+
+const parseSickLeave = (object: any): SickLeave => {
+  if (!object) throw new Error("Missing sick leave");
+
   return {
-    name: parseString(object.name),
-    dateOfBirth: parseDate(object.dateOfBirth),
-    ssn: parseString(object.ssn),
-    gender: parseGender(object.gender),
-    occupation: parseString(object.occupation),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    entries: object.entries,
+    startDate: parseToDate(object.startDate, "sick leave start date"),
+    endDate: parseToDate(object.endDate, "sick leave end date"),
   };
 };
 
-export default toNewPatientEntry;
+const parseDischarge = (object: any): Discharge => {
+  if (!object) throw new Error("Missing discharge");
+
+  return {
+    date: parseToDate(object.date, "discharge date"),
+    criteria: parseToString(object.criteria, "discharge criteria"),
+  };
+};
+
+export const toNewEntry = (object: any): NewEntry => {
+  const newBaseEntry = toNewBaseEntry(object) as NewEntry;
+
+  switch (newBaseEntry.type) {
+    case EntryType.HealthCheck:
+      return {
+        ...newBaseEntry,
+        healthCheckRating: parseHealthCheckRating(object.healthCheckRating),
+      };
+    case EntryType.OccupationalHealthCare:
+      const newEntry = {
+        ...newBaseEntry,
+        employerName: parseToString(object.employerName, "employer name"),
+      };
+
+      if (object.sickLeave) {
+        newEntry.sickLeave = parseSickLeave(object.sickLeave);
+      }
+
+      return newEntry;
+    case EntryType.Hospital:
+      return { ...newBaseEntry, discharge: parseDischarge(object.discharge) };
+    default:
+      return assertNever(newBaseEntry);
+  }
+};

@@ -5,10 +5,16 @@ import { v4 as uuidv4 } from "uuid";
 import {
   Patient,
   NonSensitivePatientEntry,
+  NewEntry,
   NewPatientEntry,
+  Entry
 } from "../src/types";
 
+
+
 const patients: Array<Patient> = patientData;
+
+let savedPatients = [...patients];
 
 const getEntries = (): Array<Patient> => {
   return patients;
@@ -42,13 +48,21 @@ const addPatient = (entry: NewPatientEntry): Patient => {
   return newPatientEntry;
 };
 
-/* const addEntry = () => {
-  return [];
+
+const addEntry = (patient: Patient, newEntry: NewEntry): Patient => {
+  const entry: Entry = { ...newEntry, id: uuidv4() };
+  const savedPatient = { ...patient, entries: patient.entries.concat(entry) };
+  savedPatients = savedPatients.map((p) =>
+    p.id === savedPatient.id ? savedPatient : p
+  ); 
+
+  return savedPatient;
 };
- */
+
 export default {
   getEntries,
   getNonSensitiveEntries,
   findById,
   addPatient,
+  addEntry
 };

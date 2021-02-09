@@ -5,7 +5,7 @@ import React from "react";
 import axios from "axios";
 import { Container, Table, Button } from "semantic-ui-react";
 
-import { PatientFormValues } from "../AddPatientModal/AddPatientForm";
+import { PatientFormValues } from "../types";
 import AddPatientModal from "../AddPatientModal";
 import { Patient } from "../types";
 import { apiBaseUrl } from "../constants";
