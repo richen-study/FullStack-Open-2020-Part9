@@ -52,6 +52,8 @@ const PatientPage: React.FunctionComponent = () => {
         <strong>Occupation:</strong> {patient.occupation}
       </p>
 
+      {patient.entries.length > 0 && <h2>Entries</h2>}
+
       <Card.Group>
         {patient.entries.map(entry => (
           <EntryDetails key={entry.id} entry={entry} />
